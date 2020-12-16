@@ -1,0 +1,4 @@
+house-price-prediction-app
+*.pyc
+.DS_Store
+.env
