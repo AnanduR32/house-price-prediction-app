@@ -29,7 +29,17 @@ temp = df["totalPrice"].groupby(df["district"]).agg([np.mean,np.median])
 ## graph
 district_split_fig = px.bar(color = temp.index, x = temp.index, y = temp[ch])
 def create_figure(value):
-    return  px.bar(color = temp.index, x = temp.index, y = temp[value])
+    return  px.bar(
+            x = temp.index,
+            y = temp[value],
+            labels={'x': 'Districts', 'y':''},
+            color_discrete_sequence =['skyblue']*len(df)
+        ).update_layout(
+            {
+                'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+                'paper_bgcolor': 'rgba(0, 0, 0, 0)'
+            }
+        )
 
 ## app layout
 app.layout = html.Div(
