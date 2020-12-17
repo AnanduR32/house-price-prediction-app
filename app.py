@@ -81,6 +81,52 @@ app.layout = html.Div(
         html.Div(
             className = 'row',
             children = [
+                html.Div(
+                className = 'four columns div-user-controls',
+                children = [
+                        dcc.Slider(
+                            id='year--slider',
+                            min=df['tradeTime'].min(),
+                            max=df['tradeTime'].max(),
+                            value=df['tradeTime'].max(),
+                            marks={str(year): str(year) for year in df['tradeTime'].unique()},
+                            step=None
+                        ),
+                        dcc.Slider(
+                            id='square-slider',
+                            min=df['square'].min(),
+                            max=df['square'].max(),
+                            value=df['square'].median(),
+                            marks={str(sqr): str(sqr) for sqr in df['square'].unique()},
+                            step=None
+                        ),
+                        dcc.Slider(
+                            id='CA-slider',
+                            min=df['communityAverage'].min(),
+                            max=df['communityAverage'].max(),
+                            value=df['communityAverage'].median(),
+                            marks={str(ca): str(ca) for ca in df['communityAverage'].unique()},
+                            step=None
+                        )
+                    ]
+                ),
+                html.Div(
+                className = 'four columns div-user-controls',
+                children = [
+                        
+                    ]
+                ),
+                html.Div(
+                className = 'four columns div-user-controls',
+                children = [
+                        
+                    ]
+                ),
+            ]
+        ),
+        html.Div(
+            className = 'row',
+            children = [
                 html.A(
                     href = "https://www.kaggle.com/aquaregis32/beijing-house-price-prediction",
                     title = "Link to kaggle notebook",
