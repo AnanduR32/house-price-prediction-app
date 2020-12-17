@@ -69,7 +69,16 @@ app.layout = html.Div(
             ]
         ),
         html.Div(
-            className = 'row'
+            className = 'row',
+            children = [
+                html.A(
+                    href = "https://www.kaggle.com/aquaregis32/beijing-house-price-prediction",
+                    title = "Link to kaggle notebook",
+                    children = [
+                        html.P('''The data cleaning and modelling can be viewed on my kaggle page'''),
+                    ]
+                ),
+            ]
         )
     ]
 )
