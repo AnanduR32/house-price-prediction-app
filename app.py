@@ -480,6 +480,8 @@ def prediction_out(json_file):
             df_enc = encode_df(df)
             pred = prediction(df_enc)
             return pred
+        except:
+            return "Cannot process request"
 
 @app.callback(
     Output('prediction-display', 'children'),
