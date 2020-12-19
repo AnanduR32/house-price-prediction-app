@@ -299,7 +299,7 @@ app.layout = html.Div(
         html.Div(id = 'dropdown-buildingType-out', style = {'display':'none'}),
 
         # prediction output
-        html.Div(id = 'prediction-out', style = {'display':'none'}),
+        html.Div(id = 'prediction-out', style = {'display':'none'})
     ]
 )
 
@@ -314,22 +314,6 @@ def display_graph(value):
     return figure
 
 ## Col 1 
-## Year picker in, out, and display
-# @app.callback(
-#     Output('year-picker-out', 'children'),
-#     Input('year-picker-in', 'date'))
-# def year_picker_out(date_value):
-#     time.sleep(1)
-#     if date_value is not None:
-#         date_object = date.fromisoformat(date_value)
-#         date_string = date_object.strftime('%Y-%m-%d')
-#         return str(date_string)
-# @app.callback(
-#     Output('year-picker-display', 'children'),
-#     Input('year-picker-out', 'children'))
-# def year_display(value):
-#     return '{}'.format(value)
-
 ## Time slider in, out, and display
 @app.callback(
     Output('time-slider-out', 'children'),
@@ -407,11 +391,6 @@ def dropdown_buildingType_in(value):
     Input('livingRoom-slider-in', 'value'))
 def livingRoom_slider_out(value):
     return str(value)
-# @app.callback(
-#     dash.dependencies.Output('livingRoom-slider-display', 'children'),
-#     [dash.dependencies.Input('livingRoom-slider-out', 'children')])
-# def livingRoom_slider_display(value):
-#     return 'Selected: {}'.format(value)
 
 ## CA slider in, out, and display
 @app.callback(
@@ -419,11 +398,6 @@ def livingRoom_slider_out(value):
     Input('drawingRoom-slider-in', 'value'))
 def drawingRoom_slider_out(value):
     return str(value)
-# @app.callback(
-#     dash.dependencies.Output('drawingRoom-slider-display', 'children'),
-#     [dash.dependencies.Input('drawingRoom-slider-out', 'children')])
-# def drawingRoom_slider_display(value):
-#     return 'Selected: {}'.format(value)
 
 ## CA slider in, out, and display
 @app.callback(
@@ -431,11 +405,6 @@ def drawingRoom_slider_out(value):
     Input('kitchen-slider-in', 'value'))
 def kitchen_slider_out(value):
     return str(value)
-# @app.callback(
-#     dash.dependencies.Output('kitchen-slider-display', 'children'),
-#     [dash.dependencies.Input('kitchen-slider-out', 'children')])
-# def kitchen_slider_display(value):
-#     return 'Selected: {}'.format(value)
 
 ## CA slider in, out, and display
 @app.callback(
@@ -443,11 +412,6 @@ def kitchen_slider_out(value):
     Input('bathRoom-slider-in', 'value'))
 def bathRoom_slider_out(value):
     return str(value)
-# @app.callback(
-#     dash.dependencies.Output('bathRoom-slider-display', 'children'),
-#     [dash.dependencies.Input('bathRoom-slider-out', 'children')])
-# def bathRoom_slider_display(value):
-#     return 'Selected: {}'.format(value)
 
 ## Predicting - model working
 @app.callback(
@@ -466,7 +430,6 @@ def bathRoom_slider_out(value):
     Input('dropdown-buildingType-out', 'children'))
 def prediction_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, kitchen, livingRoom,
  district, fiveYearProperty, buildingStructure, renovationCondition, buildingType):
-    time.sleep(0.1)
     df_dict = {
         'tradeTime': tradeTime,
         'square':int(square),
@@ -482,14 +445,13 @@ def prediction_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, k
         'district':district
     }    
     df_new = pd.DataFrame(df_dict,index = [0])
-    print(df_new.info())
     cat_cols = ['livingRoom','drawingRoom','kitchen','bathRoom','buildingType','renovationCondition','buildingStructure','fiveYearsProperty','district']
     encoded_array = enc.transform(df_new[cat_cols])
     encoded_df = pd.DataFrame(encoded_array, columns = enc.get_feature_names(input_features = cat_cols))
     df_enc = pd.concat([df_new, encoded_df], axis=1).drop(columns = cat_cols, axis=1)
     pred = model.predict(df_enc)
     pred = np.round(pred[0], 4)
-    return str(pred)
+    return pred
 
 @app.callback(
     Output('prediction-display', 'children'),
