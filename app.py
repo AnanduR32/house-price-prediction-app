@@ -451,6 +451,9 @@ def prediction_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, k
     df_enc = pd.concat([df_new, encoded_df], axis=1).drop(columns = cat_cols, axis=1)
     pred = model.predict(df_enc)
     pred = np.round(pred[0], 4)
+    print(model)
+    print(enc)
+    print(pred)
     return pred
 
 @app.callback(
