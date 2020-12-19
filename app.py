@@ -449,12 +449,13 @@ def prediction_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, k
     encoded_array = enc.transform(df_new[cat_cols])
     encoded_df = pd.DataFrame(encoded_array, columns = enc.get_feature_names(input_features = cat_cols))
     df_enc = pd.concat([df_new, encoded_df], axis=1).drop(columns = cat_cols, axis=1)
-    pred = model.predict(df_enc)
-    pred = np.round(pred[0], 4)
-    print(model)
-    print(enc)
-    print(pred)
-    return pred
+    if df_enc is not None and df_enc is not '':
+        try:
+            pred = model.predict(df_enc)
+            pred = np.round(pred[0], 4)
+            return pred
+        except:
+            return 'Unable to predict'
 
 @app.callback(
     Output('prediction-display', 'children'),
