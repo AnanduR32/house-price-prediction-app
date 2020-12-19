@@ -39,6 +39,11 @@ elevator = ["Present","Absent"]
 buildingStructure = ["Unavailable","Mixed","Brick/Wood","Brick/Concrete","Steel","Steel/Concrete"]
 buildingType = ["Tower","Bunglow","Plate/Tower","Plate"]
 renovationCondition = ["Other","Rough","Simplicity","Hardcover"]
+## Model
+model = pickle.load(open('model/sklearn_model.sav', 'rb'))
+
+## Encoder
+enc = pickle.load(open('encoders/encoder.sav', 'rb'))
 
 ## graph subsetting
 temp1 = df["totalPrice"].groupby(df["district"]).agg([np.mean,np.median])
@@ -449,7 +454,7 @@ def prediction_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, k
     encoded_array = enc.transform(df_new[cat_cols])
     encoded_df = pd.DataFrame(encoded_array, columns = enc.get_feature_names(input_features = cat_cols))
     df_enc = pd.concat([df_new, encoded_df], axis=1).drop(columns = cat_cols, axis=1)
-    if df_enc is not None and df_enc is not '':
+    if df_enc != None and df_enc != '':
         try:
             pred = model.predict(df_enc)
             pred = np.round(pred[0], 4)
@@ -465,6 +470,4 @@ def prediction_display(value):
 
 ## Main
 if __name__ == '__main__':
-    model = pickle.load(open('model/sklearn_model.sav', 'rb'))
-    enc = pickle.load(open('encoders/encoder.sav', 'rb'))
-    app.run_server(debug=True)
+    app.run_server()
