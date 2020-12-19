@@ -5,7 +5,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
-from datetime import date
+from datetime import date, datetime
+import time
 import re
 
 import pandas as pd
@@ -120,12 +121,11 @@ app.layout = html.Div(
                                                     id='year-picker-in',
                                                     min_date_allowed=date(1950, 1, 1),
                                                     max_date_allowed=date(2021, 1, 1),
-                                                    initial_visible_month=date(2017, 8, 5),
-                                                    date=date(2017, 8, 25)
+                                                    initial_visible_month=date(2020, 7, 28),
+                                                    date=date(2020, 7, 28)
                                                 ),
                                             ]
                                         ),
-                                        html.Div(id = 'year-picker-display')
                                     ]
                                 ), 
                                 html.Hr(style = {'width':'70%'}),
@@ -322,22 +322,23 @@ def display_graph(value):
     Output('year-picker-out', 'children'),
     Input('year-picker-in', 'date'))
 def year_picker_out(date_value):
+    time.sleep(1)
     if date_value is not None:
         date_object = date.fromisoformat(date_value)
         date_string = date_object.strftime('%Y-%m-%d')
-        return date_string
-@app.callback(
-    Output('year-picker-display', 'children'),
-    Input('year-picker-out', 'children'))
-def year_display(value):
-    return '{}'.format(value)
+        return str(date_string)
+# @app.callback(
+#     Output('year-picker-display', 'children'),
+#     Input('year-picker-out', 'children'))
+# def year_display(value):
+#     return '{}'.format(value)
 
 ## Square slider in, out, and display
 @app.callback(
     Output('square-slider-out', 'children'),
     [Input('square-slider-in', 'value')])
 def square_slider_out(value):
-    return '{}'.format(value)
+    return str(value)
 @app.callback(
     Output('square-slider-display', 'children'),
     Input('square-slider-out', 'children'))
@@ -349,7 +350,7 @@ def square_slider_display(value):
     Output('CA-slider-out', 'children'),
     Input('CA-slider-in', 'value'))
 def CA_slider_out(value):
-    return '{}'.format(value)
+    return str(value)
 @app.callback(
     Output('CA-slider-display', 'children'),
     Input('CA-slider-out', 'children'))
@@ -369,25 +370,25 @@ def dropdown_district_in(value):
     Output('dropdown-fiveYearProperty-out', 'children'),
     Input('dropdown-fiveYearProperty-in', 'value'))
 def dropdown_fiveYearProperty_in(value):
-    return '{}'.format(value)
+    return str(value)
 
 @app.callback(
     Output('dropdown-buildingStructure-out', 'children'),
     Input('dropdown-buildingStructure-in', 'value'))
 def dropdown_buildingStructure_in(value):
-    return '{}'.format(value)
+    return str(value)
 
 @app.callback(
     Output('dropdown-renovationCondition-out', 'children'),
     Input('dropdown-renovationCondition-in', 'value'))
 def dropdown_renovationCondition_in(value):
-    return '{}'.format(value)
+    return str(value)
 
 @app.callback(
     Output('dropdown-buildingType-out', 'children'),
     Input('dropdown-buildingType-in', 'value'))
 def dropdown_buildingType_in(value):
-    return '{}'.format(value)
+    return str(value)
 
 ## Slider col 3
 ## CA slider in, out, and display
@@ -479,8 +480,8 @@ def prediction_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, k
     df_enc = pd.concat([df_new, encoded_df], axis=1).drop(columns = cat_cols, axis=1)
 
     pred = model.predict(df_enc)
-    pred = np.round(pred[0], 2)
-    return '{}'.format(pred)
+    pred = np.round(pred[0], 4)
+    return str(pred)
 
 @app.callback(
     Output('prediction-display', 'children'),
