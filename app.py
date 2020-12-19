@@ -39,6 +39,22 @@ elevator = ["Present","Absent"]
 buildingStructure = ["Unavailable","Mixed","Brick/Wood","Brick/Concrete","Steel","Steel/Concrete"]
 buildingType = ["Tower","Bunglow","Plate/Tower","Plate"]
 renovationCondition = ["Other","Rough","Simplicity","Hardcover"]
+
+def encode_df(df):
+    cat_cols = ['livingRoom','drawingRoom','kitchen','bathRoom','buildingType','renovationCondition','buildingStructure','fiveYearsProperty','district']
+    encoded_array = enc.transform(df[cat_cols])
+    encoded_df = pd.DataFrame(encoded_array, columns = enc.get_feature_names(input_features = cat_cols))
+    df_enc = pd.concat([df, encoded_df], axis=1).drop(columns = cat_cols, axis=1)
+    return(df_enc)
+
+def prediction(df):
+    try:
+        pred = model.predict(df)
+        pred = np.round(pred[0], 4)
+        return pred
+    except:
+        return 'Unable to predict'
+
 ## Model
 model = pickle.load(open('model/sklearn_model.sav', 'rb'))
 
@@ -303,6 +319,8 @@ app.layout = html.Div(
         html.Div(id = 'dropdown-renovationCondition-out', style = {'display':'none'}),
         html.Div(id = 'dropdown-buildingType-out', style = {'display':'none'}),
 
+        # Dataframe
+        html.Div(id = 'dataframe-out', style = {'display':'none'}),
         # prediction output
         html.Div(id = 'prediction-out', style = {'display':'none'})
     ]
@@ -420,7 +438,7 @@ def bathRoom_slider_out(value):
 
 ## Predicting - model working
 @app.callback(
-    Output('prediction-out', 'children'),
+    Output('dataframe-out', 'children'),
     Input('time-slider-out', 'children'),
     Input('square-slider-out', 'children'),
     Input('CA-slider-out', 'children'),
@@ -433,7 +451,7 @@ def bathRoom_slider_out(value):
     Input('dropdown-buildingStructure-out', 'children'),
     Input('dropdown-renovationCondition-out', 'children'),
     Input('dropdown-buildingType-out', 'children'))
-def prediction_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, kitchen, livingRoom,
+def dataframe_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, kitchen, livingRoom,
  district, fiveYearProperty, buildingStructure, renovationCondition, buildingType):
     df_dict = {
         'tradeTime': tradeTime,
@@ -450,17 +468,18 @@ def prediction_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, k
         'district':district
     }    
     df_new = pd.DataFrame(df_dict,index = [0])
-    cat_cols = ['livingRoom','drawingRoom','kitchen','bathRoom','buildingType','renovationCondition','buildingStructure','fiveYearsProperty','district']
-    encoded_array = enc.transform(df_new[cat_cols])
-    encoded_df = pd.DataFrame(encoded_array, columns = enc.get_feature_names(input_features = cat_cols))
-    df_enc = pd.concat([df_new, encoded_df], axis=1).drop(columns = cat_cols, axis=1)
-    if df_enc != None and df_enc != '':
+    return df_new.to_json() 
+
+@app.callback(
+    Output('prediction-out', 'children'),
+    Input('dataframe-out', 'children'))
+def prediction_out(json_file):
+    if(json_file!= None and json_file!=''):
         try:
-            pred = model.predict(df_enc)
-            pred = np.round(pred[0], 4)
+            df = pd.read_json(json_file)
+            df_enc = encode_df(df)
+            pred = prediction(df_enc)
             return pred
-        except:
-            return 'Unable to predict'
 
 @app.callback(
     Output('prediction-display', 'children'),
@@ -470,4 +489,4 @@ def prediction_display(value):
 
 ## Main
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug = True)
