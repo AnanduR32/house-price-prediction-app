@@ -4,6 +4,7 @@ certifi==2020.12.5
 click==7.1.2
 colorama==0.4.4
 dash==1.18.1
+dash-bootstrap-components==0.11.0
 dash-core-components==1.14.1
 dash-daq==0.5.0
 dash-html-components==1.1.1
@@ -16,7 +17,7 @@ gunicorn==20.0.4
 isort==5.6.4
 itsdangerous==1.1.0
 Jinja2==2.11.2
-joblib
+joblib 
 lazy-object-proxy==1.4.3
 MarkupSafe
 mccabe==0.6.1
@@ -28,7 +29,7 @@ python-dateutil==2.8.1
 pytz==2020.4
 retrying==1.3.3
 scikit-learn 
-scipy 
+scipy
 six==1.15.0
 threadpoolctl 
 toml==0.10.2
