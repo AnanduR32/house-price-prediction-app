@@ -5,7 +5,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
-from datetime import date, datetime
+from datetime import date, datetime as dt
 import time
 import re
 
@@ -113,19 +113,16 @@ app.layout = html.Div(
                             children = [
                                 html.Div(
                                     children = [
-                                        html.H6('''Year trading in'''),
-                                        html.Div(
-                                            style = {'padding-left':'1.2em','padding-bottom':'1.2em'},
-                                            children = [
-                                                dcc.DatePickerSingle(
-                                                    id='year-picker-in',
-                                                    min_date_allowed=date(1950, 1, 1),
-                                                    max_date_allowed=date(2021, 1, 1),
-                                                    initial_visible_month=date(2020, 7, 28),
-                                                    date=date(2020, 7, 28)
-                                                ),
-                                            ]
+                                        html.H6('''Time trading in'''),
+                                        dcc.Slider(
+                                            id = 'time-slider-in',
+                                            min = 731002,
+                                            max = 736722,
+                                            value = 735853,
+                                            step = 1
                                         ),
+                                        html.Div(id = 'time-slider-display')
+                                
                                     ]
                                 ), 
                                 html.Hr(style = {'width':'70%'}),
@@ -288,7 +285,7 @@ app.layout = html.Div(
         html.Div(id = 'dropdown-plot-1-out', style = {'display':'none'}),
 
         # data for predicting
-        html.Div(id = 'year-picker-out', style = {'display':'none'}),
+        html.Div(id = 'time-slider-out', style = {'display':'none'}),
         html.Div(id = 'square-slider-out', style = {'display':'none'}),
         html.Div(id = 'CA-slider-out', style = {'display':'none'}),
         html.Div(id = 'bathRoom-slider-out', style = {'display':'none'}),
@@ -318,20 +315,33 @@ def display_graph(value):
 
 ## Col 1 
 ## Year picker in, out, and display
-@app.callback(
-    Output('year-picker-out', 'children'),
-    Input('year-picker-in', 'date'))
-def year_picker_out(date_value):
-    time.sleep(1)
-    if date_value is not None:
-        date_object = date.fromisoformat(date_value)
-        date_string = date_object.strftime('%Y-%m-%d')
-        return str(date_string)
+# @app.callback(
+#     Output('year-picker-out', 'children'),
+#     Input('year-picker-in', 'date'))
+# def year_picker_out(date_value):
+#     time.sleep(1)
+#     if date_value is not None:
+#         date_object = date.fromisoformat(date_value)
+#         date_string = date_object.strftime('%Y-%m-%d')
+#         return str(date_string)
 # @app.callback(
 #     Output('year-picker-display', 'children'),
 #     Input('year-picker-out', 'children'))
 # def year_display(value):
 #     return '{}'.format(value)
+
+## Time slider in, out, and display
+@app.callback(
+    Output('time-slider-out', 'children'),
+    [Input('time-slider-in', 'value')])
+def time_slider_out(value):
+    return value
+@app.callback(
+    Output('time-slider-display', 'children'),
+    Input('time-slider-out', 'children'))
+def time_slider_display(value):
+    value = dt.fromordinal(value).strftime('%d %B, %Y')
+    return 'Selected: {}'.format(value)
 
 ## Square slider in, out, and display
 @app.callback(
@@ -442,7 +452,7 @@ def bathRoom_slider_out(value):
 ## Predicting - model working
 @app.callback(
     Output('prediction-out', 'children'),
-    Input('year-picker-out', 'children'),
+    Input('time-slider-out', 'children'),
     Input('square-slider-out', 'children'),
     Input('CA-slider-out', 'children'),
     Input('bathRoom-slider-out', 'children'),
@@ -456,10 +466,11 @@ def bathRoom_slider_out(value):
     Input('dropdown-buildingType-out', 'children'))
 def prediction_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, kitchen, livingRoom,
  district, fiveYearProperty, buildingStructure, renovationCondition, buildingType):
+    time.sleep(0.1)
     df_dict = {
         'tradeTime': tradeTime,
-        'square':square,
-        'communityAverage':communityAverage,
+        'square':int(square),
+        'communityAverage':int(communityAverage),
         'livingRoom':livingRoom,
         'drawingRoom':drawingRoom,
         'kitchen':kitchen,
@@ -471,14 +482,11 @@ def prediction_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, k
         'district':district
     }    
     df_new = pd.DataFrame(df_dict,index = [0])
-    df_new['tradeTime'] = pd.to_datetime(df_new['tradeTime'] )
-    df_new['tradeTime'] = df_new['tradeTime'] .map(date.toordinal)
-
+    print(df_new.info())
     cat_cols = ['livingRoom','drawingRoom','kitchen','bathRoom','buildingType','renovationCondition','buildingStructure','fiveYearsProperty','district']
     encoded_array = enc.transform(df_new[cat_cols])
     encoded_df = pd.DataFrame(encoded_array, columns = enc.get_feature_names(input_features = cat_cols))
     df_enc = pd.concat([df_new, encoded_df], axis=1).drop(columns = cat_cols, axis=1)
-
     pred = model.predict(df_enc)
     pred = np.round(pred[0], 4)
     return str(pred)
