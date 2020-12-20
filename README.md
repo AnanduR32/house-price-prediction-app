@@ -21,4 +21,5 @@ By taking the median value of each of the columns:
 - fiveYearsProperty  
 - subway  
 - district  
+
 We can derive the metric - 'popularity' based on the values selected which is calculated by measuring how far away from the 50th percentile data the selected data is and then calculating the ordinary least squares error - through which the percentage 'popularity'
