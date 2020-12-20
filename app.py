@@ -20,10 +20,10 @@ import dash_core_components as dcc
 import plotly.express as px
 
 ## importing external stylesheets - css
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+#external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 ## dash app + server initialize
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__) #, external_stylesheets=external_stylesheets
 server = app.server
 
 ## data
@@ -41,6 +41,10 @@ buildingType = ["Tower","Bunglow","Plate/Tower","Plate"]
 renovationCondition = ["Other","Rough","Simplicity","Hardcover"]
 elevator = ["Present","Absent"]
 subway = ["Nearby","Far"]
+
+## Colors
+title_main = '#ED7B84'
+graph_titles = '#c3e6ea'
 
 def encode_df(df):
     cat_cols = ['livingRoom','drawingRoom','kitchen','bathRoom','buildingType','renovationCondition',
@@ -75,14 +79,14 @@ def create_figure(value):
             x = temp1.index,
             y = temp1[value],
             labels={'x': 'Districts', 'y':''},
-            color_discrete_sequence =['salmon']*len(df)
+            color_discrete_sequence =['#D4EBD4']*len(df)
         ).update_layout(
             {
                 'plot_bgcolor': 'rgba(0, 0, 0, 0)',
                 'paper_bgcolor': 'rgba(0, 0, 0, 0)'
             }
         )
-
+app.title = 'House price app'
 ## app layout
 app.layout = html.Div(
     className = 'row',
@@ -97,42 +101,59 @@ app.layout = html.Div(
                     style = {'padding':'2.4em','border-radius':'25px'},
                     children = [
                         html.Div(children = [
-                            html.H2('House price prediction app'),
+                            html.H2(
+                                children = [
+                                    'House price prediction app',
+                                ],
+                                style = {'color':title_main, 'font-weight': 'bold'},
+                            ),
                             html.P('''Predicting the sales price of houses in beijing'''),
                             html.P('''Using gradient boosted regression model in sklearn.''')                
                         ]),
                     ]
                 ),
-                html.Div(
-                    className='eight columns div-for-charts',
-                    style = {'padding':'0.5em','border-radius':'25px'},
-                    children = [
-                        html.Div(
-                            className = 'six columns div-for-charts',
-                            style = {'padding':'1.4em','border-radius':'25px'},
-                            children = [
-                                html.Div(children = [
-                                    html.Div(style={'height':'2em'}),
-                                    html.H4('Select a measure to plot'),
-                                    dcc.Dropdown(
-                                        id='dropdown-plot-1-in',
-                                        options=[{'label': i, 'value': i} for i in ['mean','median']],
-                                        value='mean'
-                                    ),
-                                    dcc.Graph(
-                                        id = 'dropdown-plot-1-fig',
-                                        config={'displayModeBar': False},
-                                        animate=True
-                                    )
-                                ]) 
-                            ]
-                        ),                                
-                    ])
             ]
         ),
         html.Div(
             className = 'row',
-            style = {'padding':'2.4em', 'background-image':'linear-gradient(to bottom, #edeeed, #e4ece8, #daeae6, #cee8e7, #c3e6ea)','border-radius':'15px','margin':'1em'},
+            style = {'margin':'1em'},
+            children = [
+                html.Div(
+                    className = 'four columns div-for-charts',
+                    style = {'padding':'1.4em','border-radius':'25px'},
+                    children = [
+                        html.Div(
+                            children = [
+                                html.Div(style={'height':'2em'}),
+                                html.H5(
+                                    children = [
+                                        'Prices in different districts',
+                                    ],
+                                    style = {'color':graph_titles}
+                                ),
+                                dcc.Dropdown(
+                                    id='dropdown-plot-1-in',
+                                    options=[{'label': i, 'value': i} for i in ['mean','median']],
+                                    searchable=False,
+                                    clearable = False,
+                                    value='mean',
+                                    style = {'width':'6em'}
+                                ),
+                                dcc.Graph(
+                                    id = 'dropdown-plot-1-fig',
+                                    config={'displayModeBar': False},
+                                    animate=True
+                                )
+                            ] 
+                        )
+                    ]
+                )
+                                        
+            ]
+        ),
+        html.Div(
+            className = 'row',
+            style = {'padding':'2.4em', 'background-image':'linear-gradient(to bottom, #d4ebd4, #ccebda, #c7eae0, #c4e8e6, #c3e6ea)','border-radius':'15px','margin':'1em'},
             children = [
                 html.Div(
                     className = 'row',
@@ -215,30 +236,40 @@ app.layout = html.Div(
                                 dcc.Dropdown(
                                     id='dropdown-district-in',
                                     options=[{'label': i, 'value': i} for i in district],
+                                    searchable=False,
+                                    clearable = False,
                                     value='ChaoYang'
                                 ),
                                 html.H6('Property ownership period'),
                                 dcc.Dropdown(
                                     id='dropdown-fiveYearProperty-in',
                                     options=[{'label': i, 'value': i} for i in fiveYearProperty],
+                                    searchable=False,
+                                    clearable = False,
                                     value='Ownership<5y'
                                 ),
                                 html.H6('Building structure'),
                                 dcc.Dropdown(
                                     id='dropdown-buildingStructure-in',
                                     options=[{'label': i, 'value': i} for i in buildingStructure],
+                                    searchable=False,
+                                    clearable = False,
                                     value='Brick/Concrete'
                                 ),
                                 html.H6('Renovation condition'),
                                 dcc.Dropdown(
                                     id='dropdown-renovationCondition-in',
                                     options=[{'label': i, 'value': i} for i in renovationCondition],
+                                    searchable=False,
+                                    clearable = False,
                                     value='Simplicity'
                                 ),
                                 html.H6('Building type'),
                                 dcc.Dropdown(
                                     id='dropdown-buildingType-in',
                                     options=[{'label': i, 'value': i} for i in buildingType],
+                                    searchable=False,
+                                    clearable = False,
                                     value='Tower'
                                 ),
                             ]
