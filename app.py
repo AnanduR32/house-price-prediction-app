@@ -97,7 +97,7 @@ app.layout = html.Div(
             style = {'margin':'1em'},
             children = [
                 html.Div(
-                    className='four columns div-user-controls',
+                    className='div-user-controls',
                     style = {'padding':'2.4em','border-radius':'25px'},
                     children = [
                         html.Div(children = [
