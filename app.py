@@ -128,7 +128,8 @@ def pop_measure(data):
     try:
         for val,i in enumerate(chosen_pop):
             res[val] = data[i].apply(lambda x: percentileofscore(data_pop[i],int(x))).values[0]
-        res = int(np.array(res).mean())
+        res = np.array(res)
+        res = 100-np.sqrt(((res - 50)**2).sum()/12)
         return res
     except:
         return 'Unable to compute popularity'
@@ -559,7 +560,6 @@ def display_graph(metric, district_name):
     district_idx = district.index(district_name)
     color_list = ['#D4EBD4']*13
     color_list[district_idx] = '#4A2545'
-    time.sleep(0.2)
     figure = create_figure(metric, color_list)
     return figure
 
