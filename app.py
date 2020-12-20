@@ -8,6 +8,7 @@ from dash.dependencies import Input, Output
 from datetime import date, datetime as dt
 import time
 import re
+from scipy.stats import percentileofscore 
 
 import pandas as pd
 import numpy as np
@@ -28,6 +29,7 @@ server = app.server
 
 ## data
 df = pd.read_csv("data/cleaned_beijing.csv", parse_dates=["tradeTime"])
+data_pop = pd.read_csv("data/encoded_beijing.csv", parse_dates=["tradeTime"])
 ch = "mean"
 district = ["DongCheng","FengTai","DaXing","FaXing","FangShang",
 "ChangPing","ChaoYang","HaiDian","ShiJingShan","XiCheng","TongZhou",
@@ -36,7 +38,7 @@ district = ["DongCheng","FengTai","DaXing","FaXing","FangShang",
 fiveYearProperty = ["Ownership<5y","Ownership>5y"]
 subway = ["Nearby","Far"]
 elevator = ["Present","Absent"]
-buildingStructure = ["Unavailable","Mixed","Brick/Wood","Brick/Concrete","Steel","Steel/Concrete"]
+buildingStructure = ["Mixed","Brick/Wood","Brick/Concrete","Steel","Steel/Concrete"]
 buildingType = ["Tower","Bunglow","Plate/Tower","Plate"]
 renovationCondition = ["Other","Rough","Simplicity","Hardcover"]
 elevator = ["Present","Absent"]
@@ -45,6 +47,7 @@ subway = ["Nearby","Far"]
 ## Colors
 title_main = '#ED7B84'
 graph_titles = '#c3e6ea'
+color_list = ['#D4EBD4']*13
 
 def encode_df(df):
     cat_cols = ['livingRoom','drawingRoom','kitchen','bathRoom','buildingType','renovationCondition',
@@ -53,7 +56,6 @@ def encode_df(df):
     encoded_df = pd.DataFrame(encoded_array, columns = enc.get_feature_names(input_features = cat_cols))
     df_enc = pd.concat([df, encoded_df], axis=1).drop(columns = cat_cols, axis=1)
     return(df_enc)
-
 def prediction(df):
     try:
         pred = model.predict(df)
@@ -61,6 +63,77 @@ def prediction(df):
         return pred
     except:
         return 'Unable to predict'
+
+chosen_pop = ['square', 'livingRoom', 'drawingRoom', 'kitchen', 'bathRoom', 'buildingType',
+            'renovationCondition', 'buildingStructure' , 'elevator',
+            'fiveYearsProperty','subway', 'district']
+buildingType_re = {
+    "Tower":1,
+    "Bunglow":2,
+    "Plate/Tower":3,
+    "Plate":4
+}
+renovationCondition_re = {
+    "Other":1,
+    "Rough":2,
+    "Simplicity":3,
+    "Hardcover":4
+}
+buildingStructure_re = {
+    "Unavailable":1,
+    "Mixed":2,
+    "Brick/Wood":3,
+    "Brick/Concrete":4,
+    "Steel":5,
+    "Steel/Concrete":6
+}
+elevator_re = {
+    "Present":1,
+    "Absent":0
+}
+subway_re = {
+    "Nearby":1,
+    "Far":0
+}
+fiveYearProperty_re = {
+    "Ownership<5y":1,
+    "Ownership>5y":0
+}
+district_re = {
+    "DongCheng":1,
+    "FengTai":2,
+    "DaXing":3,
+    "FaXing":4,
+    "FangShang":5,
+    "ChangPing":6,
+    "ChaoYang":7,
+    "HaiDian":8,
+    "ShiJingShan":9,
+    "XiCheng":10,
+    "TongZhou":11,
+    "ShunYi":12,
+    "MenTouGou":13
+}
+correct_label = {
+    7:buildingType_re,
+    8:renovationCondition_re,
+    9:buildingStructure_re,
+    10:elevator_re,
+    11:fiveYearProperty_re,
+    12:subway_re,
+    13:district_re
+}            
+def pop_measure(data):
+    res = [0]*12
+    try:
+        for val,i in enumerate(chosen_pop):
+            res[val] = data[i].apply(lambda x: percentileofscore(data_pop[i],int(x))).values[0]
+        res = int(np.array(res).mean())
+        return res
+    except:
+        return 'Unable to compute popularity'
+
+
 
 ## Model
 model = pickle.load(open('model/sklearn_model.sav', 'rb'))
@@ -73,19 +146,19 @@ temp1 = df["totalPrice"].groupby(df["district"]).agg([np.mean,np.median])
 temp2 = df["communityAverage"].groupby(df["district"]).agg([np.mean,np.median])
 
 ## graph
-#district_split_fig = px.bar(color = temp1.index, x = temp1.index, y = temp1[ch])
-def create_figure(value):
+def create_figure(metric, color_list):
     return  px.bar(
-            x = temp1.index,
-            y = temp1[value],
-            labels={'x': 'Districts', 'y':''},
-            color_discrete_sequence =['#D4EBD4']*len(df)
-        ).update_layout(
-            {
-                'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-                'paper_bgcolor': 'rgba(0, 0, 0, 0)'
-            }
-        )
+                x = temp1.index,
+                y = temp1[metric],
+                labels={'x': 'Districts', 'y':''},
+                color_discrete_sequence = ['#D4EBD4']*13
+                #color_discrete_sequence =['#D4EBD4']*len(df)
+            ).update_layout(
+                {
+                    'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+                    'paper_bgcolor': 'rgba(0, 0, 0, 0)'
+                }
+            ).update_traces(marker_color=color_list)
 app.title = 'House price app'
 ## app layout
 app.layout = html.Div(
@@ -98,14 +171,14 @@ app.layout = html.Div(
             children = [
                 html.Div(
                     className='div-user-controls',
-                    style = {'padding':'2.4em','border-radius':'25px'},
+                    style = {'padding':'2.4em','borderRadius':'25px'},
                     children = [
                         html.Div(children = [
                             html.H2(
                                 children = [
                                     'House price prediction app',
                                 ],
-                                style = {'color':title_main, 'font-weight': 'bold'},
+                                style = {'color':title_main, 'fontWeight': 'bold'},
                             ),
                             html.P('''Predicting the sales price of houses in beijing'''),
                             html.P('''Using gradient boosted regression model in sklearn.''')                
@@ -119,12 +192,11 @@ app.layout = html.Div(
             style = {'margin':'1em'},
             children = [
                 html.Div(
-                    className = 'four columns div-for-charts',
-                    style = {'padding':'1.4em','border-radius':'25px'},
+                    className = 'four container columns div-for-charts',
+                    style = {'padding':'1.4em','borderRadius':'25px'},
                     children = [
                         html.Div(
                             children = [
-                                html.Div(style={'height':'2em'}),
                                 html.H5(
                                     children = [
                                         'Prices in different districts',
@@ -147,13 +219,46 @@ app.layout = html.Div(
                             ] 
                         )
                     ]
+                ),
+                html.Div(
+                    className = 'four container columns div-for-charts',
+                    style = {'padding':'1.4em','borderRadius':'25px'},
+                    children = [
+                        html.Div(
+                            children = [
+                                
+                            ] 
+                        )
+                    ]
+                ),
+                html.Div(
+                    className = 'four container columns div-for-charts',
+                    style = {'padding':'1.4em','borderRadius':'25px'},
+                    children = [
+                        html.Div(
+                            children = [
+                                
+                            ] 
+                        )
+                    ]
+                ),
+                html.Div(
+                    className = 'four container columns div-for-charts',
+                    style = {'padding':'1.4em','borderRadius':'25px'},
+                    children = [
+                        html.Div(
+                            children = [
+                                
+                            ] 
+                        )
+                    ]
                 )
                                         
             ]
         ),
         html.Div(
             className = 'row',
-            style = {'padding':'2.4em', 'background-image':'linear-gradient(to bottom, #d4ebd4, #ccebda, #c7eae0, #c4e8e6, #c3e6ea)','border-radius':'15px','margin':'1em'},
+            style = {'padding':'2.4em', 'backgroundImage':'linear-gradient(to bottom, #d4ebd4, #ccebda, #c7eae0, #c4e8e6, #c3e6ea)','borderRadius':'15px','margin':'1em'},
             children = [
                 html.Div(
                     className = 'row',
@@ -344,7 +449,6 @@ app.layout = html.Div(
                                     style = {'padding':'0.5em'},
                                     children = [
                                         html.Div(
-
                                             className = 'four columns div-user-controls',
                                             style = {'padding':'1em','margin':'1em'},
                                             children = [
@@ -381,14 +485,14 @@ app.layout = html.Div(
                             children = [
                                 html.P(
                                     '''The predicted total price: ''',
-                                    style = {'font-size':'1em','display':'inline-block', 'margin-right':'0.5em'},
+                                    style = {'fontSize':'1em','display':'inline-block', 'marginRight':'0.5em'},
                                 ),
                                 html.P(
-                                    style = {'font-size':'1.5em','display':'inline-block',  'margin-right':'0.5em'},
+                                    style = {'fontSize':'1.5em','display':'inline-block',  'marginRight':'0.5em'},
                                     id = 'prediction-display',
                                 ),
                                 html.P(
-                                    style = {'font-size':'1em','display':'inline-block', 'margin-right':'0.5em'},
+                                    style = {'fontSize':'1em','display':'inline-block', 'marginRight':'0.5em'},
                                     children = [
                                        '''\u5143 (in millions)'''
                                     ]
@@ -401,7 +505,7 @@ app.layout = html.Div(
         ),
         html.Div(
             className = 'row',
-            style = {'padding-top':'3em','padding-bottom':'3em', 'margin':'1em','border-radius':'25px'},
+            style = {'paddingTop':'3em','paddingBottom':'3em', 'margin':'1em','borderRadius':'25px'},
             children = [
                 html.P('''The data cleaning and modelling is done on kaggle'''),
                 html.A(
@@ -418,6 +522,7 @@ app.layout = html.Div(
 
         # data for predicting
         html.Div(id = 'time-slider-out', style = {'display':'none'}),
+        html.Div(id = 'popularity-slider-out', style = {'display':'none'}),
         html.Div(id = 'square-slider-out', style = {'display':'none'}),
         html.Div(id = 'CA-slider-out', style = {'display':'none'}),
         html.Div(id = 'bathRoom-slider-out', style = {'display':'none'}),
@@ -444,9 +549,18 @@ app.layout = html.Div(
               [dash.dependencies.Input('dropdown-plot-1-in', 'value')])
 def display_value(value):
     return value
-@app.callback(Output('dropdown-plot-1-fig', 'figure'), Input('dropdown-plot-1-out', 'children'))
-def display_graph(value):
-    figure = create_figure(value)
+@app.callback(
+    Output('dropdown-plot-1-fig', 'figure'), 
+    Input('dropdown-plot-1-out', 'children'),
+    Input('dropdown-district-out','children')
+)
+def display_graph(metric, district_name):
+    #color_list = generate_discrete_color_list(district_name)
+    district_idx = district.index(district_name)
+    color_list = ['#D4EBD4']*13
+    color_list[district_idx] = '#4A2545'
+    time.sleep(0.2)
+    figure = create_figure(metric, color_list)
     return figure
 
 ## Col 1 
@@ -462,6 +576,28 @@ def time_slider_out(value):
 def time_slider_display(value):
     value = dt.fromordinal(value).strftime('%d %B, %Y')
     return 'Selected: {}'.format(value)
+
+## Popularity slider in, out, and display
+@app.callback(
+    Output('popularity-slider-out', 'children'),
+    Input('dataframe-out', 'children'))
+def popularity_slider_out(json_file):
+    if(json_file!= None and json_file!=''):
+        try:
+            df = pd.read_json(json_file)
+            for key,val in correct_label.items():
+                df.iloc[:,key] = df.iloc[:,key].replace(val)
+            popularity = pop_measure(df)
+            return popularity
+        except:
+            return "Cannot process request"
+@app.callback(
+    Output('popularity-slider-in', 'value'),
+    Input('popularity-slider-out', 'children')
+)
+def popularity_slider_in(value):
+    return value
+
 
 ## Square slider in, out, and display
 @app.callback(
