@@ -39,9 +39,12 @@ elevator = ["Present","Absent"]
 buildingStructure = ["Unavailable","Mixed","Brick/Wood","Brick/Concrete","Steel","Steel/Concrete"]
 buildingType = ["Tower","Bunglow","Plate/Tower","Plate"]
 renovationCondition = ["Other","Rough","Simplicity","Hardcover"]
+elevator = ["Present","Absent"]
+subway = ["Nearby","Far"]
 
 def encode_df(df):
-    cat_cols = ['livingRoom','drawingRoom','kitchen','bathRoom','buildingType','renovationCondition','buildingStructure','fiveYearsProperty','district']
+    cat_cols = ['livingRoom','drawingRoom','kitchen','bathRoom','buildingType','renovationCondition',
+    'buildingStructure','elevator', 'fiveYearsProperty', 'subway','district']
     encoded_array = enc.transform(df[cat_cols])
     encoded_df = pd.DataFrame(encoded_array, columns = enc.get_feature_names(input_features = cat_cols))
     df_enc = pd.concat([df, encoded_df], axis=1).drop(columns = cat_cols, axis=1)
@@ -59,7 +62,7 @@ def prediction(df):
 model = pickle.load(open('model/sklearn_model.sav', 'rb'))
 
 ## Encoder
-enc = pickle.load(open('encoders/encoder.sav', 'rb'))
+enc = pickle.load(open('encoders/one_hot_encoder.sav', 'rb'))
 
 ## graph subsetting
 temp1 = df["totalPrice"].groupby(df["district"]).agg([np.mean,np.median])
@@ -102,28 +105,34 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     className='eight columns div-for-charts',
-                    style = {'padding':'2.4em','border-radius':'25px'},
+                    style = {'padding':'0.5em','border-radius':'25px'},
                     children = [
-                        html.Div(children = [
-                            html.Div(style={'height':'2em'}),
-                            html.H4('Select a measure to plot'),
-                            dcc.Dropdown(
-                                id='dropdown-plot-1-in',
-                                options=[{'label': i, 'value': i} for i in ['mean','median']],
-                                value='mean'
-                            ),
-                            dcc.Graph(
-                                id = 'dropdown-plot-1-fig',
-                                config={'displayModeBar': False},
-                                animate=True
-                            )
-                        ]) 
+                        html.Div(
+                            className = 'six columns div-for-charts',
+                            style = {'padding':'1.4em','border-radius':'25px'},
+                            children = [
+                                html.Div(children = [
+                                    html.Div(style={'height':'2em'}),
+                                    html.H4('Select a measure to plot'),
+                                    dcc.Dropdown(
+                                        id='dropdown-plot-1-in',
+                                        options=[{'label': i, 'value': i} for i in ['mean','median']],
+                                        value='mean'
+                                    ),
+                                    dcc.Graph(
+                                        id = 'dropdown-plot-1-fig',
+                                        config={'displayModeBar': False},
+                                        animate=True
+                                    )
+                                ]) 
+                            ]
+                        ),                                
                     ])
             ]
         ),
         html.Div(
             className = 'row',
-            style = {'padding':'2.4em', 'background-color':'skyblue','border-radius':'15px','margin':'1em'},
+            style = {'padding':'2.4em', 'background-image':'linear-gradient(to bottom, #edeeed, #e4ece8, #daeae6, #cee8e7, #c3e6ea)','border-radius':'15px','margin':'1em'},
             children = [
                 html.Div(
                     className = 'row',
@@ -173,6 +182,26 @@ app.layout = html.Div(
                                             #marks={str(ca): str(ca) for ca in np.linspace(df['communityAverage'].min(),df['communityAverage'].max(), num = 5)},
                                             step=1
                                         ),
+                                        html.H6(
+                                            id = 'popularity-slider-display',
+                                            children = [
+                                                "Popularity"
+                                            ]
+                                        ),
+                                        dcc.Slider(
+                                            id='popularity-slider-in',
+                                            min=0,
+                                            max=100,
+                                            disabled = True,
+                                            marks={
+                                                '0': {'label': '0', 'style':{'color': '#FF6962'}},
+                                                '25': {'label': '25', 'style':{'color': '#FF8989'}},
+                                                '50': {'label': '50', 'style':{'color': '#FFB3A5'}},
+                                                '75': {'label': '75', 'style':{'color': '#7ABD91'}},
+                                                '100': {'label': '100', 'style':{'color': '#5FA777'}}
+                                            },
+                                            step=1
+                                        ),
                                         # html.Div(id = 'CA-slider-display')
                                     ]
                                 )
@@ -219,61 +248,97 @@ app.layout = html.Div(
                             style = {'padding':'1.4em'},
                             children = [
                                 html.Div(
+                                    className = 'row',
                                     children = [
-                                        html.H6('''Living rooms'''),
-                                        dcc.Slider(
-                                            id='livingRoom-slider-in',
-                                            min=df['livingRoom'].min(),
-                                            max=df['livingRoom'].max(),
-                                            value=df['livingRoom'].median(),
-                                            marks={str(ca): str(ca) for ca in df['livingRoom'].unique()},
-                                            step=1
+                                        html.Div(
+                                            children = [
+                                                html.H6('''Living rooms'''),
+                                                dcc.Slider(
+                                                    id='livingRoom-slider-in',
+                                                    min=df['livingRoom'].min(),
+                                                    max=df['livingRoom'].max(),
+                                                    value=df['livingRoom'].median(),
+                                                    marks={str(ca): str(ca) for ca in df['livingRoom'].unique()},
+                                                    step=1
+                                                ),
+                                                #html.Div(id = 'livingRoom-slider-display')
+                                            ]
                                         ),
-                                        #html.Div(id = 'livingRoom-slider-display')
+                                        html.Div(
+                                            children = [
+                                                html.H6('''Drawing rooms'''),
+                                                dcc.Slider(
+                                                    id='drawingRoom-slider-in',
+                                                    min=df['drawingRoom'].min(),
+                                                    max=df['drawingRoom'].max(),
+                                                    value=df['drawingRoom'].median(),
+                                                    marks={str(ca): str(ca) for ca in df['drawingRoom'].unique()},
+                                                    step=1
+                                                ),
+                                                #html.Div(id = 'drawingRoom-slider-display')
+                                            ]
+                                        ),
+                                        html.Div(
+                                            children = [
+                                                html.H6('''Kitchens'''),
+                                                dcc.Slider(
+                                                    id='kitchen-slider-in',
+                                                    min=df['kitchen'].min(),
+                                                    max=df['kitchen'].max(),
+                                                    value=df['kitchen'].median(),
+                                                    marks={str(ca): str(ca) for ca in df['kitchen'].unique()},
+                                                    step=1
+                                                ),
+                                                #html.Div(id = 'kitchen-slider-display')
+                                            ]
+                                        ),
+                                        html.Div(
+                                            children = [
+                                                html.H6('''Bathrooms'''),
+                                                dcc.Slider(
+                                                    id='bathRoom-slider-in',
+                                                    min=df['bathRoom'].min(),
+                                                    max=df['bathRoom'].max(),
+                                                    value=df['bathRoom'].median(),
+                                                    marks={str(ca): str(ca) for ca in df['bathRoom'].unique()},
+                                                    step=1
+                                                ),
+                                                #html.Div(id = 'bathRoom-slider-display')
+                                            ]
+                                        ),
                                     ]
                                 ),
                                 html.Div(
+                                    className = 'row',
+                                    style = {'padding':'0.5em'},
                                     children = [
-                                        html.H6('''Drawing rooms'''),
-                                        dcc.Slider(
-                                            id='drawingRoom-slider-in',
-                                            min=df['drawingRoom'].min(),
-                                            max=df['drawingRoom'].max(),
-                                            value=df['drawingRoom'].median(),
-                                            marks={str(ca): str(ca) for ca in df['drawingRoom'].unique()},
-                                            step=1
+                                        html.Div(
+
+                                            className = 'four columns div-user-controls',
+                                            style = {'padding':'1em','margin':'1em'},
+                                            children = [
+                                                html.H6('''Elevator'''),
+                                                dcc.RadioItems(
+                                                    id = "radio-elevator-in",
+                                                    options=[{'label': i, 'value': i} for i in elevator],
+                                                    value='Present'
+                                                )
+                                            ]
                                         ),
-                                        #html.Div(id = 'drawingRoom-slider-display')
+                                        html.Div(
+                                            className = 'four columns div-user-controls',
+                                            style = {'padding':'1em','margin':'1em'},
+                                            children = [
+                                                html.H6('''Subway'''),
+                                                dcc.RadioItems(
+                                                    id = "radio-subway-in",
+                                                    options=[{'label': i, 'value': i} for i in subway],
+                                                    value='Far'
+                                                )         
+                                            ]
+                                        )  
                                     ]
-                                ),
-                                html.Div(
-                                    children = [
-                                        html.H6('''Kitchens'''),
-                                        dcc.Slider(
-                                            id='kitchen-slider-in',
-                                            min=df['kitchen'].min(),
-                                            max=df['kitchen'].max(),
-                                            value=df['kitchen'].median(),
-                                            marks={str(ca): str(ca) for ca in df['kitchen'].unique()},
-                                            step=1
-                                        ),
-                                        #html.Div(id = 'kitchen-slider-display')
-                                    ]
-                                ),
-                                html.Div(
-                                    children = [
-                                        html.H6('''Bathrooms'''),
-                                        dcc.Slider(
-                                            id='bathRoom-slider-in',
-                                            min=df['bathRoom'].min(),
-                                            max=df['bathRoom'].max(),
-                                            value=df['bathRoom'].median(),
-                                            marks={str(ca): str(ca) for ca in df['bathRoom'].unique()},
-                                            step=1
-                                        ),
-                                        #html.Div(id = 'bathRoom-slider-display')
-                                    ]
-                                )
+                                )  
                             ]
                         ),
                     ]
@@ -281,9 +346,24 @@ app.layout = html.Div(
                 html.Div(
                     className = 'row',
                     children = [
-                        html.H5(
-                            id = 'prediction-display'
-                        )
+                        html.Div(
+                            children = [
+                                html.P(
+                                    '''The predicted total price: ''',
+                                    style = {'font-size':'1em','display':'inline-block', 'margin-right':'0.5em'},
+                                ),
+                                html.P(
+                                    style = {'font-size':'1.5em','display':'inline-block',  'margin-right':'0.5em'},
+                                    id = 'prediction-display',
+                                ),
+                                html.P(
+                                    style = {'font-size':'1em','display':'inline-block', 'margin-right':'0.5em'},
+                                    children = [
+                                       '''\u5143 (in millions)'''
+                                    ]
+                                ),
+                            ]
+                        ),
                     ]
                 )
             ]
@@ -318,6 +398,8 @@ app.layout = html.Div(
         html.Div(id = 'dropdown-buildingStructure-out', style = {'display':'none'}),
         html.Div(id = 'dropdown-renovationCondition-out', style = {'display':'none'}),
         html.Div(id = 'dropdown-buildingType-out', style = {'display':'none'}),
+        html.Div(id = 'radio-elevator-out', style = {'display':'none'}),
+        html.Div(id = 'radio-subway-out', style = {'display':'none'}),
 
         # Dataframe
         html.Div(id = 'dataframe-out', style = {'display':'none'}),
@@ -372,7 +454,7 @@ def CA_slider_out(value):
     Output('CA-slider-display', 'children'),
     Input('CA-slider-out', 'children'))
 def CA_slider_display(value):
-    return 'Community average: {}'.format(value)
+    return 'Average population: {}'.format(value)
 
 ## Dropdowns
 @app.callback(
@@ -436,6 +518,21 @@ def kitchen_slider_out(value):
 def bathRoom_slider_out(value):
     return str(value)
 
+## Elevator radio in
+@app.callback(
+    Output('radio-elevator-out', 'children'),
+    Input('radio-elevator-in', 'value')
+)
+def radio_elevator_out(value):
+    return str(value)
+## Subway radio in
+@app.callback(
+    Output('radio-subway-out', 'children'),
+    Input('radio-subway-in', 'value')
+)
+def radio_subway_out(value):
+    return str(value)
+
 ## Predicting - model working
 @app.callback(
     Output('dataframe-out', 'children'),
@@ -450,9 +547,12 @@ def bathRoom_slider_out(value):
     Input('dropdown-fiveYearProperty-out', 'children'),
     Input('dropdown-buildingStructure-out', 'children'),
     Input('dropdown-renovationCondition-out', 'children'),
-    Input('dropdown-buildingType-out', 'children'))
+    Input('dropdown-buildingType-out', 'children'),
+    Input('radio-elevator-out', 'children'),
+    Input('radio-subway-out', 'children')
+)
 def dataframe_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, kitchen, livingRoom,
- district, fiveYearProperty, buildingStructure, renovationCondition, buildingType):
+ district, fiveYearProperty, buildingStructure, renovationCondition, buildingType, elevator, subway):
     df_dict = {
         'tradeTime': tradeTime,
         'square':int(square),
@@ -464,7 +564,9 @@ def dataframe_out(tradeTime, square, communityAverage, bathRoom, drawingRoom, ki
         'buildingType':buildingType,
         'renovationCondition':renovationCondition,
         'buildingStructure':buildingStructure,
+        'elevator':elevator,
         'fiveYearsProperty':fiveYearProperty,
+        'subway':subway,
         'district':district
     }    
     df_new = pd.DataFrame(df_dict,index = [0])
@@ -487,7 +589,7 @@ def prediction_out(json_file):
     Output('prediction-display', 'children'),
     Input('prediction-out', 'children'))
 def prediction_display(value):
-    return 'The predicted price: {}'.format(value)
+    return str(value)
 
 ## Main
 if __name__ == '__main__':
