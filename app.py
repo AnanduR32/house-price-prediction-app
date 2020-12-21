@@ -31,10 +31,8 @@ server = app.server
 df = pd.read_csv("data/cleaned_beijing.csv", parse_dates=["tradeTime"])
 data_pop = pd.read_csv("data/encoded_beijing.csv", parse_dates=["tradeTime"])
 ch = "mean"
-district = ["DongCheng","FengTai","DaXing","FaXing","FangShang",
-"ChangPing","ChaoYang","HaiDian","ShiJingShan","XiCheng","TongZhou",
-"ShunYi","MenTouGou"
-]
+district = ["ChangPing","ChaoYang","DaXing","DongCheng","FaXing","FangShang","FengTai",
+"HaiDian","MenTouGou","ShiJingShan","ShunYi","TongZhou","XiCheng"]
 fiveYearProperty = ["Ownership<5y","Ownership>5y"]
 subway = ["Nearby","Far"]
 elevator = ["Present","Absent"]
@@ -43,6 +41,9 @@ buildingType = ["Tower","Bunglow","Plate/Tower","Plate"]
 renovationCondition = ["Other","Rough","Simplicity","Hardcover"]
 elevator = ["Present","Absent"]
 subway = ["Nearby","Far"]
+
+pie_names = ['buildingType', 'renovationCondition', 'buildingStructure','fiveYearsProperty', 'elevator', 'subway', 'district']
+pie_values = ['communityAverage', 'square', 'totalPrice']
 
 ## Colors
 title_main = '#ED7B84'
@@ -194,7 +195,7 @@ app.layout = html.Div(
             children = [
                 html.Div(
                     className = 'four container columns div-for-charts',
-                    style = {'padding':'1.4em','borderRadius':'25px'},
+                    style = {'padding':'1em','borderRadius':'25px'},
                     children = [
                         html.Div(
                             children = [
@@ -223,11 +224,27 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     className = 'four container columns div-for-charts',
-                    style = {'padding':'1.4em','borderRadius':'25px'},
+                    style = {'padding':'1em','borderRadius':'25px'},
                     children = [
                         html.Div(
                             children = [
-                                
+                                html.P("Names:"),
+                                dcc.Dropdown(
+                                    id='pie-plot-names', 
+                                    value='buildingType', 
+                                    options=[{'value': x, 'label': x} 
+                                            for x in pie_names],
+                                    clearable=False
+                                ),
+                                html.P("Values:"),
+                                dcc.Dropdown(
+                                    id='pie-plot-values', 
+                                    value='communityAverage', 
+                                    options=[{'value': x, 'label': x} 
+                                            for x in pie_values],
+                                    clearable=False
+                                ),
+                                dcc.Graph(id="pie-chart"),
                             ] 
                         )
                     ]
@@ -562,6 +579,18 @@ def display_graph(metric, district_name):
     color_list[district_idx] = '#4A2545'
     figure = create_figure(metric, color_list)
     return figure
+
+@app.callback(
+    Output("pie-chart", "figure"), 
+    Input("pie-plot-names", "value"), 
+    Input("pie-plot-values", "value"),
+    Input('dropdown-district-out','children')
+)
+def generate_chart(names, values,district):
+    df_sub = df[df['district']==district]
+    fig = px.pie(df_sub, values=values, names=names)
+    return fig
+
 
 ## Col 1 
 ## Time slider in, out, and display
