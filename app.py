@@ -10,6 +10,9 @@ import time
 import re
 from scipy.stats import percentileofscore 
 
+from urllib.request import urlopen
+import json
+
 import pandas as pd
 import numpy as np
 import pickle
@@ -147,6 +150,16 @@ enc = pickle.load(open('encoders/one_hot_encoder.sav', 'rb'))
 temp1 = df["totalPrice"].groupby(df["district"]).agg([np.mean,np.median])
 temp2 = df["communityAverage"].groupby(df["district"]).agg([np.mean,np.median])
 
+temp3 = df["totalPrice"].groupby(df["district"]).agg([np.sum])
+temp4 = df["square"].groupby(df["district"]).agg([np.sum])
+temp5 = df["communityAverage"].groupby(df["district"]).agg([np.sum])
+
+map_df = {
+    'communityAverage' : temp5,
+    'square' : temp4,
+    'totalPrice' : temp3
+}
+
 ## graph
 def create_figure(metric, color_list):
     return  px.bar(
@@ -161,6 +174,13 @@ def create_figure(metric, color_list):
                     'paper_bgcolor': 'rgba(0, 0, 0, 0)'
                 }
             ).update_traces(marker_color=color_list)
+## Map
+geojson = 'https://raw.githubusercontent.com/AnanduR32/MachineLearning-Basics/master/Case%20Studies/Python/Beijing%20House%20price%20prediction/data/map.geojson'
+with urlopen(geojson) as response:
+    map_beijing = json.load(response)
+    
+
+
 app.title = 'House price app'
 ## app layout
 app.layout = html.Div(
@@ -234,7 +254,9 @@ app.layout = html.Div(
                                     value='buildingType', 
                                     options=[{'value': x, 'label': x} 
                                             for x in pie_names],
-                                    clearable=False
+                                    searchable=False,
+                                    clearable = False,
+                                    style = {'width':'15em', 'paddingBottom':'0.5em'}
                                 ),
                                 html.P("Values:"),
                                 dcc.Dropdown(
@@ -242,7 +264,9 @@ app.layout = html.Div(
                                     value='communityAverage', 
                                     options=[{'value': x, 'label': x} 
                                             for x in pie_values],
-                                    clearable=False
+                                    searchable=False,
+                                    clearable = False,
+                                    style = {'width':'15em'}
                                 ),
                                 dcc.Graph(id="pie-chart"),
                             ] 
@@ -251,27 +275,18 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     className = 'four container columns div-for-charts',
-                    style = {'padding':'1.4em','borderRadius':'25px'},
+                    style = {'paddingTop':'1.4em',
+                            'paddingRight':'1.4em',
+                            'paddingBottom':'1.4em',
+                            'borderRadius':'25px'},
                     children = [
                         html.Div(
                             children = [
-                                
+                                dcc.Graph(id="map-plot"),
                             ] 
                         )
                     ]
-                ),
-                html.Div(
-                    className = 'four container columns div-for-charts',
-                    style = {'padding':'1.4em','borderRadius':'25px'},
-                    children = [
-                        html.Div(
-                            children = [
-                                
-                            ] 
-                        )
-                    ]
-                )
-                                        
+                )                                        
             ]
         ),
         html.Div(
@@ -589,6 +604,18 @@ def display_graph(metric, district_name):
 def generate_chart(names, values,district):
     df_sub = df[df['district']==district]
     fig = px.pie(df_sub, values=values, names=names)
+    return fig
+@app.callback(
+    Output("map-plot", "figure"), 
+    [Input("pie-plot-values", "value")])
+def display_choropleth(value):
+    fig = px.choropleth(data_frame = map_df[value], color=map_df[value]['sum'],
+                    geojson=map_beijing, locations=map_df[value].index,
+                    color_continuous_scale=px.colors.sequential.Viridis[::-1], 
+                    projection="mercator",featureidkey = 'properties.name'
+    )
+    fig.update_geos(fitbounds="locations", visible=False)
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
     return fig
 
 
