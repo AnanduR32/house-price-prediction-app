@@ -27,7 +27,13 @@ import plotly.express as px
 #external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 ## dash app + server initialize
-app = dash.Dash(__name__) #, external_stylesheets=external_stylesheets
+app = dash.Dash(__name__,
+                meta_tags=[
+                    {"name": "viewport", "content": "width=device-width, initial-scale=1"},
+                    {'name': 'author', 'content':'Anandu R'},
+                    {'name': 'description', 'content':'House price prediction app beijing'},
+                ],
+) #, external_stylesheets=external_stylesheets
 server = app.server
 
 ## data
@@ -45,7 +51,7 @@ renovationCondition = ["Other","Rough","Simplicity","Hardcover"]
 elevator = ["Present","Absent"]
 subway = ["Nearby","Far"]
 
-pie_names = ['buildingType', 'renovationCondition', 'buildingStructure','fiveYearsProperty', 'elevator', 'subway', 'district']
+pie_names = ['buildingType', 'renovationCondition', 'buildingStructure','fiveYearsProperty', 'elevator', 'subway']
 pie_values = ['communityAverage', 'square', 'totalPrice']
 
 ## Colors
@@ -211,11 +217,12 @@ app.layout = html.Div(
         ),
         html.Div(
             className = 'row',
-            style = {'margin':'1em'},
+            style = {'margin':'1em','padding':'1em','borderRadius':'25px'},
             children = [
                 html.Div(
                     className = 'four container columns div-for-charts',
-                    style = {'padding':'1em','borderRadius':'25px'},
+                    style = {'paddingTop':'1em',
+                            'paddingBottom':'1em'},
                     children = [
                         html.Div(
                             children = [
@@ -244,7 +251,8 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     className = 'four container columns div-for-charts',
-                    style = {'padding':'1em','borderRadius':'25px'},
+                    style = {'paddingTop':'1em',
+                            'paddingBottom':'1em'},
                     children = [
                         html.Div(
                             children = [
@@ -275,10 +283,8 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     className = 'four container columns div-for-charts',
-                    style = {'paddingTop':'1.4em',
-                            'paddingRight':'1.4em',
-                            'paddingBottom':'1.4em',
-                            'borderRadius':'25px'},
+                    style = {'paddingTop':'1em',
+                            'paddingBottom':'1em'},
                     children = [
                         html.Div(
                             children = [
