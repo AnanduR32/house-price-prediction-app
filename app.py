@@ -153,7 +153,16 @@ model = pickle.load(open('model/sklearn_model.sav', 'rb'))
 enc = pickle.load(open('encoders/one_hot_encoder.sav', 'rb'))
 
 ## graph subsetting
-temp1 = df["totalPrice"].groupby(df["district"]).agg([np.mean,np.median])
+temp1_a = df["totalPrice"].groupby(df["district"]).agg([np.mean,np.median])
+temp1_b = df["square"].groupby(df["district"]).agg([np.mean,np.median])
+temp1_c = df["communityAverage"].groupby(df["district"]).agg([np.mean,np.median])
+
+bar_temp1 = {
+    'totalPrice':temp1_a,
+    'square':temp1_b,
+    'communityAverage':temp1_c
+}
+
 temp2 = df["communityAverage"].groupby(df["district"]).agg([np.mean,np.median])
 
 temp3 = df["totalPrice"].groupby(df["district"]).agg([np.sum])
@@ -167,12 +176,16 @@ map_df = {
 }
 
 ## graph
-def create_figure(metric, color_list):
+def create_figure(metric, value, color_list):
     return  px.bar(
-                x = temp1.index,
-                y = temp1[metric],
+                x = bar_temp1[value].index,
+                y = bar_temp1[value][metric],
                 labels={'x': 'Districts', 'y':''},
-                color_discrete_sequence = ['#D4EBD4']*13
+                color_discrete_sequence = ['#D4EBD4']*13,
+                range_y = [
+                    bar_temp1[value][metric].min(),
+                    bar_temp1[value][metric].max()
+                ]
                 #color_discrete_sequence =['#D4EBD4']*len(df)
             ).update_layout(
                 {
@@ -256,30 +269,45 @@ app.layout = html.Div(
                     children = [
                         html.Div(
                             children = [
-                                html.P("Names:"),
-                                dcc.Dropdown(
-                                    id='pie-plot-names', 
-                                    value='buildingType', 
-                                    options=[{'value': x, 'label': x} 
-                                            for x in pie_names],
-                                    searchable=False,
-                                    clearable = False,
-                                    style = {'width':'15em', 'paddingBottom':'0.5em'}
-                                ),
-                                html.P("Values:"),
-                                dcc.Dropdown(
-                                    id='pie-plot-values', 
-                                    value='communityAverage', 
-                                    options=[{'value': x, 'label': x} 
-                                            for x in pie_values],
-                                    searchable=False,
-                                    clearable = False,
-                                    style = {'width':'15em'}
-                                ),
                                 dcc.Graph(
                                     id="pie-chart",
                                     config={'displayModeBar': False},
                                 ),
+                                html.Div(
+                                    className = 'container',
+                                    style = {'display':'inline-block'},
+                                    children = [
+                                        html.P("Names:"),
+                                        dcc.Dropdown(
+                                            id='pie-plot-names', 
+                                            value='buildingType', 
+                                            options=[{'value': x, 'label': x} 
+                                                    for x in pie_names],
+                                            searchable=False,
+                                            clearable = False,
+                                            style = {'width':'14em', 
+                                                    'paddingBottom':'0.5em',
+                                                    'marginRight':'0.5em'}
+                                        ),
+                                    ]
+                                ),
+                                html.Div(
+                                    className = 'container',
+                                    style = {'display':'inline-block'},
+                                    children = [
+                                        html.P("Values:"),
+                                        dcc.Dropdown(
+                                            id='pie-plot-values', 
+                                            value='communityAverage', 
+                                            options=[{'value': x, 'label': x} 
+                                                    for x in pie_values],
+                                            searchable=False,
+                                            clearable = False,
+                                            style = {'width':'14em'}
+                                        ),
+                                    ]
+                                )
+                                
                             ] 
                         )
                     ]
@@ -597,14 +625,15 @@ def display_value(value):
 @app.callback(
     Output('dropdown-plot-1-fig', 'figure'), 
     Input('dropdown-plot-1-out', 'children'),
+    Input("pie-plot-values", "value"),
     Input('dropdown-district-out','children')
 )
-def display_graph(metric, district_name):
+def display_graph(metric, values, district_name):
     #color_list = generate_discrete_color_list(district_name)
     district_idx = district.index(district_name)
     color_list = ['#D4EBD4']*13
     color_list[district_idx] = '#4A2545'
-    figure = create_figure(metric, color_list)
+    figure = create_figure(metric, values, color_list)
     figure.update_layout(margin={"r":0,"t":1,"l":0,"b":0})
     return figure
 
