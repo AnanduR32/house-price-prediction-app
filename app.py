@@ -276,7 +276,10 @@ app.layout = html.Div(
                                     clearable = False,
                                     style = {'width':'15em'}
                                 ),
-                                dcc.Graph(id="pie-chart"),
+                                dcc.Graph(
+                                    id="pie-chart",
+                                    config={'displayModeBar': False},
+                                ),
                             ] 
                         )
                     ]
@@ -288,7 +291,10 @@ app.layout = html.Div(
                     children = [
                         html.Div(
                             children = [
-                                dcc.Graph(id="map-plot"),
+                                dcc.Graph(
+                                    id="map-plot",
+                                    config={'displayModeBar': False}
+                                ),
                             ] 
                         )
                     ]
