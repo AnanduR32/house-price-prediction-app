@@ -240,7 +240,7 @@ app.layout = html.Div(
                             children = [
                                 html.H5(
                                     id = 'graph-1-title',
-                                    style = {'color':graph_titles, 'text-align':'center'}
+                                    style = {'color':graph_titles, 'textAlign':'center'}
                                 ),
                                 dcc.Graph(
                                     id = 'dropdown-plot-1-fig',
@@ -267,7 +267,7 @@ app.layout = html.Div(
                             children = [
                                 html.H5(
                                     id = 'graph-2-title',
-                                    style = {'color':graph_titles, 'text-align':'center'}
+                                    style = {'color':graph_titles, 'textAlign':'center'}
                                 ),
                                 dcc.Graph(
                                     id="pie-chart",
@@ -320,7 +320,7 @@ app.layout = html.Div(
                             children = [
                                 html.H5(
                                     id = 'graph-3-title',
-                                    style = {'color':graph_titles, 'text-align':'center'}
+                                    style = {'color':graph_titles, 'textAlign':'center'}
                                 ),
                                 dcc.Graph(
                                     id="map-plot",
