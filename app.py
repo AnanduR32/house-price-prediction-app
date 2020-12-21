@@ -234,16 +234,21 @@ app.layout = html.Div(
             children = [
                 html.Div(
                     className = 'container four columns div-for-charts',
-                    # style = {'paddingTop':'1em',
-                    #         'paddingBottom':'1em'},
+                    style = {'padding':'1em'},
                     children = [
                         html.Div(
                             children = [
-                                html.H5(
-                                    children = [
-                                        'Prices in different districts',
-                                    ],
-                                    style = {'color':graph_titles}
+                                # html.H5(
+                                #     children = [
+                                #         'Districts metrics',
+                                #     ],
+                                #     style = {'color':graph_titles,
+                                #             ''}
+                                # ),
+                                dcc.Graph(
+                                    id = 'dropdown-plot-1-fig',
+                                    config={'displayModeBar': False},
+                                    animate=True
                                 ),
                                 dcc.Dropdown(
                                     id='dropdown-plot-1-in',
@@ -252,11 +257,6 @@ app.layout = html.Div(
                                     clearable = False,
                                     value='mean',
                                     style = {'width':'6em'}
-                                ),
-                                dcc.Graph(
-                                    id = 'dropdown-plot-1-fig',
-                                    config={'displayModeBar': False},
-                                    animate=True
                                 )
                             ] 
                         )
@@ -264,8 +264,7 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     className = 'container four columns div-for-charts',
-                    # style = {'paddingTop':'1em',
-                    #         'paddingBottom':'1em'},
+                    style = {'padding':'1em'},
                     children = [
                         html.Div(
                             children = [
@@ -314,8 +313,7 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     className = 'container four columns div-for-charts',
-                    # style = {'paddingTop':'1em',
-                    #         'paddingBottom':'1em'},
+                    style = {'padding':'1em'},
                     children = [
                         html.Div(
                             children = [
