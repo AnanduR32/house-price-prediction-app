@@ -217,12 +217,12 @@ app.layout = html.Div(
         ),
         html.Div(
             className = 'row',
-            style = {'margin':'1em','padding':'1em','borderRadius':'25px'},
+            style = {'padding':'1em', 'margin':'0em','borderRadius':'25px'},
             children = [
                 html.Div(
-                    className = 'four container columns div-for-charts',
-                    style = {'paddingTop':'1em',
-                            'paddingBottom':'1em'},
+                    className = 'container four columns div-for-charts',
+                    # style = {'paddingTop':'1em',
+                    #         'paddingBottom':'1em'},
                     children = [
                         html.Div(
                             children = [
@@ -250,9 +250,9 @@ app.layout = html.Div(
                     ]
                 ),
                 html.Div(
-                    className = 'four container columns div-for-charts',
-                    style = {'paddingTop':'1em',
-                            'paddingBottom':'1em'},
+                    className = 'container four columns div-for-charts',
+                    # style = {'paddingTop':'1em',
+                    #         'paddingBottom':'1em'},
                     children = [
                         html.Div(
                             children = [
@@ -282,9 +282,9 @@ app.layout = html.Div(
                     ]
                 ),
                 html.Div(
-                    className = 'four container columns div-for-charts',
-                    style = {'paddingTop':'1em',
-                            'paddingBottom':'1em'},
+                    className = 'container four columns div-for-charts',
+                    # style = {'paddingTop':'1em',
+                    #         'paddingBottom':'1em'},
                     children = [
                         html.Div(
                             children = [
@@ -599,6 +599,7 @@ def display_graph(metric, district_name):
     color_list = ['#D4EBD4']*13
     color_list[district_idx] = '#4A2545'
     figure = create_figure(metric, color_list)
+    figure.update_layout(margin={"r":0,"t":1,"l":0,"b":0})
     return figure
 
 @app.callback(
@@ -610,6 +611,7 @@ def display_graph(metric, district_name):
 def generate_chart(names, values,district):
     df_sub = df[df['district']==district]
     fig = px.pie(df_sub, values=values, names=names)
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
     return fig
 @app.callback(
     Output("map-plot", "figure"), 
