@@ -25,3 +25,5 @@ By taking the median value of each of the columns:
 We can derive the metric - 'popularity' based on the values selected which is calculated by measuring how far away from the 50th percentile data the selected data is and then calculating the ordinary least squares error - through which the percentage 'popularity'
 
 Obtained beijing topographical map from Nicole9519's [repo](https://github.com/Nicole9519/Nicole9519.github.io/blob/54284226e0266763611a51ee925f9b7a9f80c5e2/dist/data/beijing.geojson) which had to be formatted to be used in the dash board, the formatting/cleaning can be found [here](https://github.com/AnanduR32/MachineLearning-Basics/tree/master/Case%20Studies/Python/Beijing%20House%20price%20prediction)
+
+Edited the geojson map using geopandas and http://geojson.io/
