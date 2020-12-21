@@ -56,7 +56,7 @@ pie_values = ['communityAverage', 'square', 'totalPrice']
 
 ## Colors
 title_main = '#ED7B84'
-graph_titles = '#c3e6ea'
+graph_titles = '#4A2545'
 color_list = ['#D4EBD4']*13
 
 def encode_df(df):
@@ -234,16 +234,18 @@ app.layout = html.Div(
             children = [
                 html.Div(
                     className = 'container four columns div-for-charts',
-                    # style = {'paddingTop':'1em',
-                    #         'paddingBottom':'1em'},
+                    style = {'padding':'1em'},
                     children = [
                         html.Div(
                             children = [
                                 html.H5(
-                                    children = [
-                                        'Prices in different districts',
-                                    ],
-                                    style = {'color':graph_titles}
+                                    id = 'graph-1-title',
+                                    style = {'color':graph_titles, 'textAlign':'center'}
+                                ),
+                                dcc.Graph(
+                                    id = 'dropdown-plot-1-fig',
+                                    config={'displayModeBar': False},
+                                    animate=True
                                 ),
                                 dcc.Dropdown(
                                     id='dropdown-plot-1-in',
@@ -252,11 +254,6 @@ app.layout = html.Div(
                                     clearable = False,
                                     value='mean',
                                     style = {'width':'6em'}
-                                ),
-                                dcc.Graph(
-                                    id = 'dropdown-plot-1-fig',
-                                    config={'displayModeBar': False},
-                                    animate=True
                                 )
                             ] 
                         )
@@ -264,11 +261,14 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     className = 'container four columns div-for-charts',
-                    # style = {'paddingTop':'1em',
-                    #         'paddingBottom':'1em'},
+                    style = {'padding':'1em'},
                     children = [
                         html.Div(
                             children = [
+                                html.H5(
+                                    id = 'graph-2-title',
+                                    style = {'color':graph_titles, 'textAlign':'center'}
+                                ),
                                 dcc.Graph(
                                     id="pie-chart",
                                     config={'displayModeBar': False},
@@ -314,11 +314,14 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     className = 'container four columns div-for-charts',
-                    # style = {'paddingTop':'1em',
-                    #         'paddingBottom':'1em'},
+                    style = {'padding':'1em'},
                     children = [
                         html.Div(
                             children = [
+                                html.H5(
+                                    id = 'graph-3-title',
+                                    style = {'color':graph_titles, 'textAlign':'center'}
+                                ),
                                 dcc.Graph(
                                     id="map-plot",
                                     config={'displayModeBar': False}
@@ -618,8 +621,31 @@ app.layout = html.Div(
 )
 
 ## input output callback handle
-@app.callback(dash.dependencies.Output('dropdown-plot-1-out', 'children'),
-              [dash.dependencies.Input('dropdown-plot-1-in', 'value')])
+@app.callback(
+    Output('graph-1-title', 'children'),
+    Input("pie-plot-values", "value")
+)
+def graph_1_title(value):
+    return 'District-wise {} comparison'.format(value)
+@app.callback(
+    Output('graph-2-title', 'children'),
+    Input("pie-plot-values", "value"),
+    Input('pie-plot-names', 'value')
+)
+def graph_2_title(value, name):
+    return '{}-wise {} comparison'.format(name,value)
+
+@app.callback(
+    Output('graph-3-title', 'children'),
+    Input("pie-plot-values", "value")
+)
+def graph_2_title(value):
+    return 'Map-view {}'.format(value)
+
+@app.callback(
+    Output('dropdown-plot-1-out', 'children'),
+    Input('dropdown-plot-1-in', 'value')
+)
 def display_value(value):
     return value
 @app.callback(
