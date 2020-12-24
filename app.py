@@ -20,7 +20,6 @@ import pickle
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import GradientBoostingRegressor
 
-import dash_core_components as dcc
 import plotly.express as px
 
 ## importing external stylesheets - css
@@ -194,7 +193,7 @@ def create_figure(metric, value, color_list):
                 }
             ).update_traces(marker_color=color_list)
 ## Map
-geojson = 'https://raw.githubusercontent.com/AnanduR32/MachineLearning-Basics/master/Case%20Studies/Python/Beijing%20House%20price%20prediction/data/map.geojson'
+geojson = 'https://raw.githubusercontent.com/AnanduR32/MachineLearning-Basics/master/Projects/Beijing%20House%20price%20prediction/data/map.geojson'
 with urlopen(geojson) as response:
     map_beijing = json.load(response)
     
@@ -570,7 +569,7 @@ app.layout = html.Div(
                                 html.P(
                                     style = {'fontSize':'1em','display':'inline-block', 'marginRight':'0.5em'},
                                     children = [
-                                       '''\u5143 (in millions)'''
+                                       '''\u00A5 (Yuan, in millions)'''
                                     ]
                                 ),
                             ]
