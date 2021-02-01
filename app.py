@@ -22,9 +22,6 @@ from sklearn.ensemble import GradientBoostingRegressor
 
 import plotly.express as px
 
-## importing external stylesheets - css
-#external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-
 ## dash app + server initialize
 app = dash.Dash(__name__,
                 meta_tags=[
@@ -73,6 +70,7 @@ def prediction(df):
     except:
         return 'Unable to predict'
 
+## Dropdown options 
 chosen_pop = ['square', 'livingRoom', 'drawingRoom', 'kitchen', 'bathRoom', 'buildingType',
             'renovationCondition', 'buildingStructure' , 'elevator',
             'fiveYearsProperty','subway', 'district']
